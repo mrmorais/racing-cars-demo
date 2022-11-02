@@ -1,0 +1,12 @@
+.Score {
+  margin-top: 20px;
+  min-width: 200px;
+text-align: center;
+}
+.Score-value {
+  background-color: rgb(255, 70, 70);
+  border-radius: 20px;
+  padding: 20px;
+  font-size: 24pt;
+  font-family: 'Press Start 2P'; 
+}
