@@ -1,20 +1,22 @@
 import "./score.css";
 
 interface ScoreProps {
+  score: number;
   teamColor: string;
   isUserTeam: boolean;
+  teamSize: number;
 }
 
-export function Score({ teamColor, isUserTeam }: ScoreProps) {
+export function Score({ score, teamColor, isUserTeam, teamSize }: ScoreProps) {
   return (
     <div className="Score">
       <div className="Score-value" style={{ backgroundColor: teamColor }}>
-        <div>100</div>
+        <div>{score}</div>
       </div>
       {isUserTeam ? (
-        <span style={{ fontSize: "20pt" }}>Seu time</span>
+        <span style={{ fontSize: "20pt" }}>Seu time ({teamSize})</span>
       ) : (
-        <span style={{ fontSize: "20pt" }}>Time rival</span>
+        <span style={{ fontSize: "20pt" }}>Time rival ({teamSize})</span>
       )}
     </div>
   );
