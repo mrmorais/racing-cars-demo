@@ -3,14 +3,13 @@ import "./timer.css";
 
 interface TimerProps {
   expiryTimestamp: Date;
+  onFinish: () => any;
 }
 
-export function Timer({ expiryTimestamp }: TimerProps) {
-  const { seconds, minutes, hours, days, isRunning, start, pause, resume, restart } = useTimer({
+export function Timer({ expiryTimestamp, onFinish }: TimerProps) {
+  const { seconds } = useTimer({
     expiryTimestamp,
-    onExpire: () => {
-      console.log("Finish!!");
-    },
+    onExpire: onFinish
   });
 
   return <div className="Timer">Acaba em {seconds} segundos</div>;
