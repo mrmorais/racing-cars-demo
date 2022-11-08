@@ -65,6 +65,16 @@
       <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+      <version>1.4.2</version>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-resolver-dns-native-macos</artifactId>
+      <classifier>osx-x86_64</classifier>
+    </dependency>
   </dependencies>
 
   <build>

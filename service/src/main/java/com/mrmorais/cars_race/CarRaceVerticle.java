@@ -4,10 +4,9 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.kafka.client.consumer.KafkaConsumer;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class CarRaceVerticle extends AbstractVerticle {
   private String sessionCode;
@@ -49,6 +48,26 @@ public class CarRaceVerticle extends AbstractVerticle {
 
       this.bookClick(guestId);
     }));
+
+    this.eb.consumer(String.format("%s.update.score", this.sessionCode), (message) -> {
+      var team = JsonObject.mapFrom(message.body()).getString("team");
+      var score = JsonObject.mapFrom(message.body()).getInteger("score");
+
+      System.out.println(message.body());
+      System.out.println(team);
+      System.out.println(CarRaceTeam.GREEN_TEAM.name().equals(team));
+
+      switch (CarRaceTeam.valueOf(team)) {
+        case GREEN_TEAM:
+          this.greenScore = score;
+          break;
+        case RED_TEAM:
+          this.redScore = score;
+          break;
+      }
+
+      this.broadcast.write(CarRaceBroadcastMessage.updateTeamScore(CarRaceTeam.valueOf(team), score));
+    });
 
     this.eb.consumer(String.format("%s.start", this.sessionCode), (message -> {
       String passedStartKey = JsonObject.mapFrom(message.body()).getString("startKey");
@@ -94,16 +113,7 @@ public class CarRaceVerticle extends AbstractVerticle {
     if (this.status != CarRaceStatus.RUNNING) return;
     CarRaceTeam team = this.redTeam.contains(guestId) ? CarRaceTeam.RED_TEAM : CarRaceTeam.GREEN_TEAM;
 
-    switch (team) {
-      case RED_TEAM:
-        redScore += 1;
-        break;
-      case GREEN_TEAM:
-        greenScore += 1;
-        break;
-    }
-
-    this.broadcast.write(CarRaceBroadcastMessage.updateTeamsScores(redScore, greenScore));
+    this.eb.publish("kafka.publish.click", KafkaPublishClick.from(this.sessionCode, team));
   }
 
   private void startSession() throws InterruptedException {
@@ -113,6 +123,11 @@ public class CarRaceVerticle extends AbstractVerticle {
     vertx.setTimer(20000, id -> {
       this.status = CarRaceStatus.FINISHED;
       this.broadcast.write(CarRaceBroadcastMessage.stopClicking());
+
+      vertx.setTimer(3000, id2 -> {
+        var winner = redScore > greenScore ? CarRaceTeam.RED_TEAM : CarRaceTeam.GREEN_TEAM;
+        this.broadcast.write(CarRaceBroadcastMessage.announceWinner(winner, redScore, greenScore));
+      });
     });
   }
 }
